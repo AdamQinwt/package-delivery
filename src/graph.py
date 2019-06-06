@@ -29,25 +29,6 @@ GRAPH_SAVE_PATH = osp.join(DATA_DIR, "graph.pkl")
 VEHICLES = ['Plane', 'Ship', 'Truck', 'Train']
 
 
-class Info:
-    def __init__(self, src, dest, speed, delay, cost, depart, vehicle, dist):
-        self.src = src
-        self.dest = dest
-        self.speed = speed
-        self.delay = delay
-        self.cost = cost
-        self.depart = depart
-        self.vehicle = vehicle
-        self.dist = dist
-
-
-class Edge:
-    def __init__(self, src, dest, info):
-        self.src = src
-        self.dest = dest
-        self.info = info
-
-
 class Graph:
     def __init__(self):
         self.vertices = set([])
