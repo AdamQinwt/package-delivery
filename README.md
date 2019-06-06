@@ -11,5 +11,5 @@ wget http://resources.dbgns.com/package-delivery/graph.pkl data/
 cd src
 python graph.py
 ```
-The last command will create serveral processes to parse the orders.
-**WARNING** Pay attention to your computational resources, as the process is pretty computational intensive and slow.
+The last command will create serveral processes to parse the orders. <br>
+**WARNING:** Pay attention to your computational resources, as the process is pretty computational intensive and slow.
