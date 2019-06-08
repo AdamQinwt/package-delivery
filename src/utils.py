@@ -103,16 +103,6 @@ def prep_data():
     print("Vehicles schedule merged into {0}".format(osp.join(DATA_DIR, "vehicle.csv")))
 
 
-def parse_order():
-    order = pd.read_csv(osp.join(DATA_DIR, "order.csv"))
-    cnts = 0
-    for idx, pair in enumerate(order[['CityOfSeller', 'CityOfPurchaser']].values):
-        if look_up_vehicle(pair[0], pair[1]) is not None and len(look_up_vehicle(pair[0], pair[1])) > 1:
-            print(look_up_vehicle(pair[0], pair[1]))
-            print("[{0}/{1}] No way between city {2} and {3}.".format(idx, len(order), pair[0], pair[1]))
-    print(cnts)
-
-
 def look_up_vehicle(seller_city, purchaser_city):
     vehicle = pd.read_csv(osp.join(DATA_DIR, "vehicle.csv"))
 
@@ -126,4 +116,3 @@ def look_up_vehicle(seller_city, purchaser_city):
 
 if __name__ == '__main__':
     prep_data()
-    parse_order()
