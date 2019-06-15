@@ -92,7 +92,6 @@ class Evaluator(object):
         for ratio in hub_ratio_field:
             new_dict["HUB_UNIT_COST_RATIO"] = ratio
             merge_a_into_b(new_dict, cfg)
-            print(cfg)
             solver = Solver()
             solver.solve(problem_id=2, tune_mode=True)
             with open(self.hub_path, "rb") as f:
@@ -109,10 +108,10 @@ class Evaluator(object):
             print("Ratio: {:.2f} | Hubs: {:.0f} | Average amount cost:{:.2f}$ | Average time cost:{:.2f}m.".
                   format(ratio, num_hubs, avg_amount_cost, avg_time_cost))
         # save to csv
-        df = pd.DataFrame(data=list(zip(cfg.EVALUATION.HUB_RATIO_FIELD, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_ratio_field, num_hubs_list, amount_cost_list, time_cost_list)),
             columns=["Ratio", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
-        df["Value"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
+        df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
         df.to_csv(cost_ratio_path, index=False, float_format="%.2f")
         
         # reset to default value
@@ -120,7 +119,6 @@ class Evaluator(object):
         index = np.where(cfg.EVALUATION.HUB_COST_CONST_FIELD == ori_const_cost)[0]
         hub_const_field = np.insert(cfg.EVALUATION.HUB_COST_CONST_FIELD, index, 0.95 * ori_const_cost)
         hub_const_field = np.insert(hub_const_field, index+2, 1.05 * ori_const_cost)
-        print(cfg.EVALUATION.HUB_COST_CONST_FIELD)
 
         # then check the sensitivity of the HUB_BUILT_COST_CONST
         # add exception handler for fear of no hubs
@@ -128,7 +126,6 @@ class Evaluator(object):
         for const_cost in hub_const_field:
             new_dict["HUB_BUILT_COST_CONST"] = const_cost
             merge_a_into_b(new_dict, cfg)
-            print(cfg)
             solver = Solver()
             solver.solve(problem_id=2, tune_mode=True)
             with open(self.hub_path, "rb") as f:
@@ -144,10 +141,10 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Const cost: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.2f}$ | Average time cost: {:.2f}m.".
                   format(const_cost, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(cfg.EVALUATION.HUB_COST_CONST_FIELD, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_const_field, num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubConstCost", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
-        df["Value"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
+        df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
         df.to_csv(cost_const_path, index=False, float_format="%.2f")
 
         # reset the const part to default value
@@ -162,7 +159,6 @@ class Evaluator(object):
         for vary_cost in hub_vary_field:
             new_dict["HUB_BUILT_COST_VARY"] = vary_cost
             merge_a_into_b(new_dict, cfg)
-            print(cfg)
             solver = Solver()
             solver.solve(problem_id=2, tune_mode=True)
             with open(self.hub_path, "rb") as f:
@@ -177,10 +173,10 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Vary cost: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.3f}$ | Average time cost: {:.2f}m.".
                   format(vary_cost, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(cfg.EVALUATION.HUB_COST_VARY_FIELD, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_vary_field, num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubVaryCost", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
-        df["Value"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
+        df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
         df.to_csv(cost_vary_path, index=False, float_format="%.2f")
         # reset
         new_dict["HUB_BUILT_COST_VARY"] = ori_vary_cost
@@ -254,8 +250,8 @@ class Evaluator(object):
         hub_cap_path = osp.join(self.base_dir, "cap.csv")
 
         index = np.where(cfg.EVALUATION.HUB_COST_VARY_FIELD == cfg.PARAM.HUB_CAPACITY)[0]
-        cfg.EVALUATION.HUB_CAPACITY_FIELD = np.insert(cfg.EVALUATION.HUB_CAPACITY_FIELD, index, 0.95 * cfg.PARAM.HUB_CAPACITY)
-        cfg.EVALUATION.HUB_CAPACITY_FIELD = np.insert(cfg.EVALUATION.HUB_CAPACITY_FIELD, index+2, 1.05 * cfg.PARAM.HUB_CAPACITY)
+        hub_capacity_field = np.insert(cfg.EVALUATION.HUB_CAPACITY_FIELD, index, 0.95 * cfg.PARAM.HUB_CAPACITY)
+        hub_capacity_field = np.insert(hub_capacity_field, index+2, 1.05 * cfg.PARAM.HUB_CAPACITY)
 
         new_dict = edict()
         num_hubs_list, amount_cost_list, time_cost_list = [], [], []
@@ -278,7 +274,7 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Hub capacity: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.3f}$ | Average time cost: {:.2f}m.".
                   format(cap, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(cfg.EVALUATION.HUB_COST_VARY_FIELD[mask], num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_capacity_field[mask], num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubCapacity", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
         df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
@@ -419,4 +415,4 @@ class Evaluator(object):
 
 if __name__ == "__main__":
     evaluator = Evaluator()
-    evaluator.evaluate(prob_id=2, tune=True)
+    evaluator.evaluate(prob_id=3, tune=True)
