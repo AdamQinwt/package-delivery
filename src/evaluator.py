@@ -256,7 +256,7 @@ class Evaluator(object):
         new_dict = edict()
         num_hubs_list, amount_cost_list, time_cost_list = [], [], []
         mask = np.ones_like(cfg.EVALUATION.HUB_CAPACITY_FIELD)
-        for idx, cap in enumerate(cfg.EVALUATION.HUB_CAPACITY_FIELD):
+        for idx, cap in enumerate(hub_capacity_field):
             new_dict["HUB_CAPACITY"] = cap
             merge_a_into_b(new_dict, cfg)
             solver = Solver()
