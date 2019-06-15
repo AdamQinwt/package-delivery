@@ -7,285 +7,242 @@
 # Website:http://www.dbgns.com
 # Blog:http://www.dbgns.com/blog
 
-import re
-import multiprocessing
+import os.path as osp
+import time
 import numpy as np
 import pandas as pd
-import os.path as osp
 import pickle as pkl
 import warnings
 from tqdm import trange
-from utils import std2sec, sec2std
+from collections import deque
+from src.config import cfg
+from src.utils import std2min
 warnings.filterwarnings('ignore')
 
-NUM_PROCESSES = 8
-NUM_CITIES = 656
-DATA_DIR = "../data"
-DIST_CSV_PATH = osp.join(DATA_DIR, "distance.csv")
-ORDER_CSV_PATH = osp.join(DATA_DIR, "order.csv")
-COMMODITY_CSV_PATH = osp.join(DATA_DIR, "commodity.csv")
-VEHICLE_CSV_PATH = osp.join(DATA_DIR, "vehicle.csv")
-GRAPH_SAVE_PATH = osp.join(DATA_DIR, "graph.pkl")
-VEHICLES = ['Plane', 'Ship', 'Truck', 'Train']
+
+class Hub(object):
+    def __init__(self, index, neighbours):
+        self.index = index
+        self.neighbours = neighbours
 
 
-class Graph:
-    def __init__(self):
-        self.vertices = set([])
-        self.neighbours = {}
-        self.infos = [[[] for _ in range(NUM_CITIES+1)] for _ in range(NUM_CITIES+1)]
-        self._load_data()
-
-    def get_vertices(self):
-        return self.vertices
-
-    def get_neighbours(self, src):
-        if src not in self.vertices:
-            raise KeyError("Error! {0} not in the vertex set!".format(src))
-        return self.neighbours[src]
-
-    def find_all_paths(self, start, end, num_transit=1, depth=0, path=[]):
-        """ find all the path(i.e. between two cities) in the graph(i.e. the city network)
-        :param start: source to start exploration
-        :param end: destination
-        :param num_transit: how many transit cities are allowed
-        :param path: path already found
-        :param depth: the depth of recursion
-        :return: if not found, return none, otherwise return the path
+class Info(object):
+    def __init__(self, src, dest, time_on_way, unit_cost_trip, depart_time, vehicle_type):
         """
-        path = path + [start]
-        depth = depth + 1
-        if depth > num_transit + 2:
-            return []
-        if start == end:
-            return [path]
-        if start not in self.vertices or end not in self.vertices:
-            return []
-        paths = []
+        Data structure to store the information of a specific transportation tool
 
-        for node in self.neighbours[start]:
-            if node not in path:
-                new_paths = self.find_all_paths(node, end, num_transit, depth, path)
-                for new_path in new_paths:
-                    paths.append(new_path)
-        return paths
-
-    def find_path(self, start, end, num_transit=1, depth=0, path=[]):
-        """ find a path(i.e. between two cities) in the graph(i.e. the city network)
-        :param start: source to start exploration
-        :param end: destination
-        :param num_transit: how many transit cities are allowed
-        :param path: path already found
-        :param depth: the depth of recursion
-        :return: if not found, return none, otherwise return the path
+        :param src: index of the city of departure
+        :param dest: index of the city of arrival
+        :param time_on_way: average delay + distance / speed  (unit: min)
+        :param unit_cost_trip: cost it takes to transmit 1kg between the two cities
+        :param depart_time: time of departure
+        :param vehicle_type: e.g. ship, plane, train, truck
         """
-        path = path + [start]
-        depth = depth + 1
-        if depth > num_transit + 2:
-            return None
-        if start == end:
-            return path
+        self.src = src
+        self.dest = dest
+        self.vehicle_type = vehicle_type
+        self.time_on_way = time_on_way
+        self.unit_cost_trip = unit_cost_trip
+        self.depart_time = depart_time
+        self.arrival_time = self.depart_time + self.time_on_way
+        while self.arrival_time >= 1440:
+            self.arrival_time -= 1440
 
-        if start not in self.vertices or end not in self.vertices:
-            return None
-        for node in self.neighbours[start]:
-            if node not in path:
-                new_path = self.find_path(node, end, num_transit, depth, path)
-                if new_path:
-                    return new_path
-        return None
+    def get_time_cost(self, total_weight, prev_arrival, emergency=0, ratio=1):
+        """
+        get the time consumption and total cost between two specific cities with specific vehicle
 
-    def _load_data(self):
-        """ construct the graph using the vehicle.csv
-        note that multi-processing can not help us here
+        :param total_weight: total weight of the order
+        :param prev_arrival: arrival time of previous vehicle(in the form of minutes)
+        :param emergency: attribute of the order
+        :param ratio: used for hubs(default: 1)
         :return:
         """
-        dist = np.array(pd.read_csv(DIST_CSV_PATH))
-        vehicle = pd.read_csv(VEHICLE_CSV_PATH)
-        if osp.exists(GRAPH_SAVE_PATH):
-            with open(GRAPH_SAVE_PATH, 'rb') as f:
-                data = pkl.load(f)
-            self.vertices = data['vertices']
-            self.neighbours = data['neighbours']
-            self.infos = data['infos']
-            print("Load graph from {0} successfully.".format(GRAPH_SAVE_PATH))
+        time_consumed = self.time_on_way + self.depart_time - prev_arrival
+        if prev_arrival > self.depart_time:
+            time_consumed += 1440
+        if not emergency:
+            total_cost = cfg.PARAM.WEIGHT_AMOUNT * total_weight * ratio * self.unit_cost_trip \
+                + cfg.PARAM.WEIGHT_TIME * time_consumed
+        else:
+            total_cost = cfg.PARAM.WEIGHT_AMOUNT * total_weight * ratio * self.unit_cost_trip \
+                + cfg.PARAM.WEIGHT_TIME_EMERGENCY * time_consumed
+        return time_consumed, total_cost
+
+
+class Graph(object):
+    def __init__(self, path, constraint=False, graph_type=1, tune_mode=False):
+        """
+        use the graph to model the city network
+
+        :param path: path to store the model(in pkl format)
+        :param constraint: whether we will consider some constraints(e.g. problem3)
+        :param graph_type: type of the network({1: complete graph}, {2: graph only contains stations(in problem4)}, {3: G_1/G_2}
+        """
+        self.path = path
+        self.constraint = constraint
+        self.graph_type = graph_type
+        self.tune_mode = tune_mode
+        self.distance = np.array(pd.read_csv(cfg.DATA.DISTANCE_CSV))
+        self.neighbours = [set() for _ in range(cfg.NUM_CITIES+1)]
+        self.large_cities, self.small_cities = None, None
+        self.infos = [[[] for i in range(cfg.NUM_CITIES+1)] for j in range(cfg.NUM_CITIES+1)]
+        # read in the commodity information
+        commodity_csv = pd.read_csv(cfg.DATA.COMMODITY_CSV)
+        commodity_csv['CategoryOfCommodity'] = commodity_csv['CategoryOfCommodity'].map(cfg.COMMODITY_TYPES)
+        self.commodity_index2types = [0 for _ in range(len(commodity_csv) + 1)]
+        self.commodity_index2weights = [0 for _ in range(len(commodity_csv) + 1)]
+        for i in range(len(commodity_csv)):
+            commodity = commodity_csv.loc[i]
+            index, commodity_type, weight = int(commodity[0]), int(commodity[2]), commodity[3]
+            self.commodity_index2types[index] = commodity_type
+            self.commodity_index2weights[index] = weight
+        self._build_graph()
+
+    def _build_graph(self):
+        since = time.time()
+        print("Start building graph...")
+        if osp.exists(self.path):
+            with open(self.path, "rb") as f:
+                model = pkl.load(f)
+            self.neighbours = model["neighbours"]
+            self.infos = model["infos"]
+            if "large_cities" in model:
+                self.large_cities = model["large_cities"]
+            if "small_cities" in model:
+                self.small_cities = model["small_cities"]
+            print("Load model from {} successfully.".format(self.path))
+            print("Graph building finished in {:.3f}s".format(time.time() - since))
             return
-        print("Processing the graph...")
-        t = trange(len(vehicle), desc="Graph construction", leave=True)
+        vehicle_csv = pd.read_csv(cfg.DATA.VEHICLE_CSV)
+        # if we are building the graph which only contains the large stations
+        if self.graph_type == 2:
+            self.large_cities = vehicle_csv.loc[vehicle_csv["Vehicle"] == "Plane", "IndexOfDepartureCity"].unique().tolist()
+            # filter the rows whose departure city is not a station
+            vehicle_csv = vehicle_csv.loc[(vehicle_csv["IndexOfDepartureCity"].isin(self.large_cities)) &
+                                          (vehicle_csv["IndexOfArrivalCity"].isin(self.large_cities))]
+            # use the set for faster speed
+            self.large_cities = set(self.large_cities)
+        # if we are building the complement graph
+        elif self.graph_type == 3:
+            self.large_cities = vehicle_csv.loc[vehicle_csv["Vehicle"] == "Plane", "IndexOfDepartureCity"].unique().tolist()
+            self.small_cities = [city for city in list(range(1, cfg.NUM_CITIES+1)) if city not in self.large_cities]
+            vehicle_csv = vehicle_csv.loc[(vehicle_csv["IndexOfDepartureCity"].isin(self.small_cities)) &
+                                          (vehicle_csv["IndexOfArrivalCity"].isin(self.small_cities))]
+            self.large_cities = set(self.large_cities)
+            self.small_cities = set(self.small_cities)
+
+        # use index as after filtering, the indices may be inconsistent
+        vehicle_index = vehicle_csv.index
+        t = trange(len(vehicle_csv), desc="Parsing the vehicle.csv...")
         for i in t:
-            t.set_description("records %d" % i)
-            rec = vehicle.loc[i]
-            src, dest = rec['IndexOfDepartureCity'], rec['IndexOfArrivalCity']
-            rec['dist'] = dist[src - 1, dest - 1]
-            if src not in self.vertices:
-                self.vertices.add(src)
-            if dest not in self.vertices:
-                self.vertices.add(dest)
-            if src not in self.neighbours.keys():
-                self.neighbours[src] = set([])
+            t.set_description("Processing {}".format(i))
+            vehicle = vehicle_csv.loc[vehicle_index[i]]
+            # get index of departure city and arrival city
+            src, dest = vehicle[0], vehicle[1]
+            # get the average delay time and speed
+            delay, speed = vehicle[2], vehicle[3]
+            # get the unit cost
+            unit_cost = vehicle[4]
+            # get the type of the vehicle(e.g. plane)
+            depart_time, vehicle_type = vehicle[5], vehicle[6]
+            # calculate relevant information and store
+            time_on_way = delay + self.distance[src-1, dest-1] / speed * 60
+            # calculate the unit cost of the whole trip
+            unit_cost_trip = self.distance[src-1, dest-1] * unit_cost / 50
+            info = Info(src, dest, time_on_way, unit_cost_trip, std2min(depart_time), vehicle_type)
+            # store
             self.neighbours[src].add(dest)
-            self.infos[src][dest].append(rec)
-            if i % 10000 == 0 and i > 0:
-                with open(osp.join(DATA_DIR, "graph" + str(i) + ".pkl"), "wb") as f:
-                    data = {'vertices': self.vertices, 'neighbours': self.neighbours, 'infos': self.infos, 'checkpoint': i}
-                    pkl.dump(data, f)
-                    print("Checkpoint %d saved." % i)
+            self.infos[src][dest].append(info)
 
-        print("Finish processing!")
-        with open(GRAPH_SAVE_PATH, 'wb') as f:
-            data = {'vertices': self.vertices, 'neighbours': self.neighbours, 'infos': self.infos}
-            pkl.dump(data, f)
-            print("Graph saved to {0}.".format(GRAPH_SAVE_PATH))
+        model = dict()
+        model["neighbours"], model["infos"] = self.neighbours, self.infos
+        if self.large_cities is not None:
+            model["large_cities"] = self.large_cities
+        if self.small_cities is not None:
+            model["small_cities"] = self.small_cities
+        with open(self.path, "wb") as f:
+            pkl.dump(model, f)
+        print("Graph building finished in {:.3f}s. Dumped into {}".format(time.time() - since, self.path))
 
-    def parse_orders(self):
-        """ schedule the orders
-        here we use multi-processing to speed up
-        :return:
+    def solve_single_order(self, order, all_vertices=False):
         """
-        order_csv = pd.read_csv(ORDER_CSV_PATH)
-        processes = []
-        for idx in range(NUM_PROCESSES):
-            start = idx * 2400 // NUM_PROCESSES
-            end = (idx + 1) * 2400 // NUM_PROCESSES
-            processes.append(multiprocessing.Process(target=self._parse_order_subprocess, args=(start, end)))
-            processes[idx].start()
-        for idx in range(NUM_PROCESSES):
-            processes[idx].join()
-        print("Finish parsing! Start merging the results")
-        costs = []
-        ratings = []
-        for idx in range(NUM_PROCESSES):
-            pattern = re.compile(".*rating:(\S+),.*cost:(\S+),.*")
-            with open("parse_order" + str(idx), 'r') as f:
-                for line in f:
-                    if pattern.search(line) is None:
-                        continue
-                    else:
-                        ratings.append(float(pattern.search(line).group(1)))
-                        costs.append(float(pattern.search(line).group(2)))
+        use dijkstra algorithm to solve
 
-        print("The average cost is {0:.2f} and the average rating is {1:.3f}".
-              format(sum(costs)/len(costs), sum(ratings)/len(ratings)))
-        print("{} orders can not be scheduled.".format(2400 - len(ratings)))
-
-    def _parse_order_subprocess(self, start, end):
-        order_csv = pd.read_csv(ORDER_CSV_PATH)
-        with open("parse_order" + str(int(start * NUM_PROCESSES / 2400)), 'w') as f:
-            for i in range(start, end):
-                order = order_csv.loc[i]
-                src, dest = order['CityOfSeller'], order['CityOfPurchaser']
-                paths = self.find_all_paths(src, dest)
-                if len(paths) == 0:
-                    continue
-                for path in paths:
-                    strategies = self.get_path_cost(order, path)
-                    best_strategy = self._find_best_strategy(strategies)
-                f.write("For order {0}, found {1} strategies in total. In the best strategy:\n rating:{2:.3f}, cost:{3:.3f}, path:{4}, vehicles:{5} arrival time:{6}\n".format(
-                    i, len(strategies), best_strategy['Rating'], best_strategy['Cost'], best_strategy['Path'], best_strategy['Vehicle'], best_strategy['TimeOfArrival']))
-
-    def _find_best_strategy(self, strategies):
-        best_score = 0
-        best_strategy = None
-        for strategy in strategies:
-            score = self._evaluate(strategy['Cost'], strategy['Rating'])
-            if score > best_score:
-                best_score = score
-                best_strategy = strategy
-        return best_strategy
-
-    @staticmethod
-    def _evaluate(cost, rate):
-        return rate / cost
-
-    def get_path_cost(self, order, path):
-        """ compute the cost for a specific order and path
-        :param order:
-        :param path:
-        :return: the cost
+        :param order: order to be analyzed
+        :param all_vertices: if True, single-source, all destinations(Note that this will shadow the dest)
+        :return: if all_vertices=False, return tuple(infos, cost), else return dict containing several tuples
         """
-        cost_segments = [{} for _ in range(len(path)-1)]
-        for i in range(len(path)-1):
-            start, end = path[i], path[i+1]
-            for idx, rec in enumerate(self.infos[start][end]):
-                cost_segments[i][rec['Vehicle']] = self._analyze_cost_segment_path(order, rec)
-
-        num_strategies = 1
-        choices = [len(cost_segments[i]) for i in range(len(path)-1)]
-        for choice in choices:
-            num_strategies *= choice
-
-        strategies = [{} for _ in range(num_strategies)]
-        idx = 0
-        while idx < num_strategies:
-            vehicles = []
-            sum_cost = 0
-            time_consumed = 0
-            for i, seg in enumerate(cost_segments):
-                vehicle = list(seg.keys())[np.random.randint(0, choices[i])]
-                vehicles.append(vehicle)
-                sum_cost += seg[vehicle][0]
-                time_consumed += seg[vehicle][1]
-            for strategy in strategies:
-                if len(strategy) != 0 and vehicles == strategy['Vehicle']:
+        if all_vertices:
+            assert self.small_cities is not None, "You can only set all_vertices=True in the small graph"
+        src, dest = order[0], order[1]
+        commodity_type = self.commodity_index2types[order[3]]
+        commodity_weight = self.commodity_index2weights[order[3]]
+        amount = order[4]
+        emergency = order[5]
+        total_weight = commodity_weight * amount
+        # next, we run the dijkstra algorithm
+        if self.graph_type == 1:
+            vertices = list(range(cfg.NUM_CITIES+1))
+        elif self.graph_type == 2:
+            vertices = self.large_cities.copy()
+        else:
+            vertices = self.small_cities.copy()
+        # we maintain the distance and best info for each vertex
+        dist_infos = {vertex: {"dist": np.inf, "info": None} for vertex in vertices}
+        previous_vertices = {vertex: None for vertex in vertices}
+        dist_infos[src]["dist"] = 0
+        while vertices:
+            current_vertex = min(vertices, key=lambda x: dist_infos[x]["dist"])
+            best_info = dist_infos[current_vertex]["info"]
+            prev_arrival = best_info.arrival_time if current_vertex != src else std2min(order[2])
+            if best_info is not None:
+                # if we have found the destination
+                if not all_vertices and best_info.dest == dest:
                     break
-            strategies[idx]['Vehicle'] = vehicles
-            strategies[idx]['Cost'] = sum_cost
-            strategies[idx]['Rating'] = self._time2rating(time_consumed, order['Emergency'])
-            strategies[idx]['TimeOfArrival'] = sec2std(std2sec(order['TimeOfOrder']) + time_consumed)
-            strategies[idx]['Path'] = path
-            idx = idx + 1
 
-        return strategies
+            if dist_infos[current_vertex]["dist"] == np.inf:
+                break
 
-    @staticmethod
-    def _time2rating(time_consumed, emergency=0):
-        """ return the rating according to the time consumption
-        :param time_consumed: time it takes to reach the arrival city
-        :param emergency: whether the order is emergency
-        :return:
-        """
-        if emergency:
-            # if emergency, we set the unit time to be half day
-            unit = 12 * 60 * 60
+            for neighbour in self.neighbours[current_vertex]:
+                # then we iterate all the possible vehicles
+                min_cost = cfg.INT_MAX
+                best_info = None
+                for info in self.infos[current_vertex][neighbour]:
+                    # consider the constraint: (type of commodity, vehicle type)
+                    if self.constraint and (commodity_type, cfg.VEHICLES.index(info.vehicle_type)) in cfg.CONSTRAINTS:
+                        continue
+                    _, info_cost = info.get_time_cost(total_weight, prev_arrival, emergency)
+                    if info_cost < min_cost:
+                        min_cost = info_cost
+                        best_info = info
+                if min_cost + dist_infos[current_vertex]["dist"] < dist_infos[neighbour]["dist"]:
+                    # update
+                    dist_infos[neighbour]["dist"] = min_cost + dist_infos[current_vertex]["dist"]
+                    dist_infos[neighbour]["info"] = best_info
+                    previous_vertices[neighbour] = current_vertex
+
+            # remove current vertex from the vertices
+            vertices.remove(current_vertex)
+        # if all_vertices = False, we only need to find the shortest path between the src and dest
+        if not all_vertices:
+            infos, current_vertex = deque(), dest
+            while previous_vertices[current_vertex] is not None:
+                infos.appendleft(dist_infos[current_vertex]["info"])
+                current_vertex = previous_vertices[current_vertex]
+            return infos
+        # if True, we will return dictionary containing information about each neighbour
         else:
-            unit = 24 * 60 * 60
+            info_costs = dict()
+            for dest in self.small_cities:
+                if src == dest:
+                    continue
+                costs = []
+                infos, current_vertex = deque(), dest
+                while previous_vertices[current_vertex] is not None:
+                    infos.appendleft(dist_infos[current_vertex]["info"])
+                    costs.append(dist_infos[current_vertex]["dist"])
+                    current_vertex = previous_vertices[current_vertex]
+                info_costs[dest] = (infos, sum(costs))
+            return info_costs
 
-        if time_consumed < unit:
-            rate = 5
-        elif time_consumed < 2 * unit:
-            rate = 4
-        elif time_consumed < 3 * unit:
-            rate = 3
-        elif time_consumed < 4 * unit:
-            rate = 2
-        else:
-            rate = 1
-        return rate
-
-    @staticmethod
-    def _analyze_cost_segment_path(order, rec):
-        """ given the order and rec, compute corresponding cost and consumer rate
-        :param order:
-        :param rec:
-        :return: the tuple (cost, rate)
-        """
-        commodity_amount = order['AmountOfCommodity']
-        order_time = std2sec(order['TimeOfOrder'])
-        depart_time = std2sec(rec['TimeOfDeparture'])
-        speed = rec['Speed']
-        delay = rec['AverageDelay']
-        unit_cost = rec['Cost']
-        dist = rec['dist']
-
-        cost = dist / 50 * commodity_amount * unit_cost
-        time_consumed = delay * 60 + dist / speed * 60 * 60 + depart_time - order_time
-        if order_time >= depart_time:
-            # order time is later than depart time
-            time_consumed += 24 * 60 * 60
-
-        return cost, time_consumed
-
-
-if __name__ == '__main__':
-    graph = Graph()
-    graph.parse_orders()

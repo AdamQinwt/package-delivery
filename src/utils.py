@@ -19,28 +19,33 @@ TABLE = {"TableA": "order", "TableB": "commodity", "TableC": "distance", "TableD
 VEHICLES = ['Plane', 'Ship', 'Truck', 'Train']
 
 
-def std2sec(std_time):
-    """ transform std format time into seconds(e.g. 17:31:50 => 17 * 60 * 60 + 31 * 60 + 50)
-    :param std_time: std format time
-    :return:
+def std2min(std_time):
+    """
+    convert the time of standard form into minutes
+
+    :param std_time:  time in the standard form(e.g. 22:41:30)
+    :return: minutes
     """
     hour, minute, second = std_time.split(":")
-    return int(hour) * 3600 + int(minute) * 60 + int(second)
+    return int(hour) * 60 + int(minute) + round(int(second)/60, 2)
 
 
-def sec2std(sec_time):
-    """ transform second format time into std format time
-    :param sec_time:
-    :return:
+def min2std(min_time, get_day=False):
+    """
+    convert the time in the form of minutes into standard form
+
+    :param min_time: minutes
+    :param get_day: calculate day or not(e.g. (+1day)17:31:25, useful when we want to get true arrival time
+    :return: the time in the standard form
     """
     day = 0
-    hour = int(sec_time // 3600)
+    second = int((min_time - int(min_time)) * 60)
+    min_time = int(min_time)
+    hour = min_time // 60
     while hour >= 24:
-        hour -= 24
-        sec_time -= 24 * 3600
         day += 1
-    minute = int((sec_time - hour * 3600) // 60)
-    second = int(sec_time - hour * 3600 - minute * 60)
+        hour -= 24
+    minute = min_time % 60
     hour, minute, second = str(hour), str(minute), str(second)
 
     if len(minute) == 1:
@@ -48,13 +53,17 @@ def sec2std(sec_time):
     if len(second) == 1:
         second = '0' + second
     # if we need more than one day
-    if day != 0:
+    if day != 0 and get_day:
         return ':'.join(['(+' + str(day) + 'day)', hour, minute, second])
     return ':'.join([hour, minute, second])
 
 
 def xlsx2csv(filename, with_header=True):
-    """ convert the .xlsx format data into csv format(speed up I/O)
+    """
+    convert the .xlsx format data into csv format(speed up I/O)
+
+    :param filename: xlsx filename
+    :param with_header(e.g. the distance.xlsx does not have a header)
     """
     csv_path = osp.join(DATA_DIR, TABLE[osp.splitext(filename)[0]] + ".csv")
 
@@ -73,7 +82,9 @@ def xlsx2csv(filename, with_header=True):
 
 
 def prep_data():
-    """ do some pre-processing work
+    """
+    do some pre-processing work
+
     """
     xlsx2csv("TableA.xlsx")
     xlsx2csv("TableB.xlsx")

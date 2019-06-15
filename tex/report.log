@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99992 (TeX Live 2015/Debian) (preloaded format=xelatex 2019.6.4)  8 JUN 2019 22:52
+This is XeTeX, Version 3.14159265-2.6-0.99992 (TeX Live 2015/Debian) (preloaded format=xelatex 2019.6.4)  8 JUN 2019 22:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -780,36 +780,36 @@ Package: suffix 2006/07/15 1.5a Variant command support
 )) (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 117.
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for LY1/ptm/m/n on input line 117.
-LaTeX Font Info:    Try loading font information for LY1+ptm on input line 117.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 119.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for LY1/ptm/m/n on input line 119.
+LaTeX Font Info:    Try loading font information for LY1+ptm on input line 119.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/ly1/ly1ptm.fd
 File: ly1ptm.fd 2001/02/01 font definitions for LY1/ptm using Berry names.
 )
-LaTeX Font Info:    ... okay on input line 117.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 117.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 117.
+LaTeX Font Info:    ... okay on input line 119.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 119.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 119.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 117.
+LaTeX Font Info:    ... okay on input line 119.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 10.95pt on input line 117.
+(Font)              scaled to size 10.95pt on input line 119.
 
 ABD: EveryShipout initializing macros
 *geometry* driver: auto-detecting
@@ -849,77 +849,77 @@ ABD: EveryShipout initializing macros
 \c@mv@tabular=\count150
 \c@mv@boldtabular=\count151
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 17.28pt on input line 124.
+(Font)              scaled to size 17.28pt on input line 126.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 12.0pt on input line 124.
-LaTeX Font Info:    Try loading font information for U+msa on input line 124.
+(Font)              scaled to size 12.0pt on input line 126.
+LaTeX Font Info:    Try loading font information for U+msa on input line 126.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 124.
+LaTeX Font Info:    Try loading font information for U+msb on input line 126.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 14.4pt on input line 133.
+(Font)              scaled to size 14.4pt on input line 135.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/b/n' will be
-(Font)              scaled to size 14.4pt on input line 133.
+(Font)              scaled to size 14.4pt on input line 135.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/b/n' will be
-(Font)              scaled to size 12.0pt on input line 134.
+(Font)              scaled to size 12.0pt on input line 136.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 8.0pt on input line 135.
+(Font)              scaled to size 8.0pt on input line 137.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/b/n' will be
-(Font)              scaled to size 10.95pt on input line 135.
+(Font)              scaled to size 10.95pt on input line 137.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/it' will be
-(Font)              scaled to size 10.95pt on input line 135.
+(Font)              scaled to size 10.95pt on input line 137.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/sc' will be
-(Font)              scaled to size 10.95pt on input line 135.
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 135.
+(Font)              scaled to size 10.95pt on input line 137.
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 137.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 9.0pt on input line 135.
+(Font)              scaled to size 9.0pt on input line 137.
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 6.0pt on input line 135.
+(Font)              scaled to size 6.0pt on input line 137.
 
 
 Package natbib Warning: Citation `collier2004greed' on page 1 undefined on inpu
-t line 138.
+t line 140.
 
 
 Package natbib Warning: Citation `collier2004greed' on page 1 undefined on inpu
-t line 138.
+t line 140.
 
 
 Package natbib Warning: Citation `collier2004greed' on page 1 undefined on inpu
-t line 138.
+t line 140.
 
 
 Package natbib Warning: Citation `collier2004greed' on page 1 undefined on inpu
-t line 138.
+t line 140.
 
 
 Package natbib Warning: Citation `collier2004greed' on page 1 undefined on inpu
-t line 138.
+t line 140.
 
 [1
 
 ]
 LaTeX Font Info:    Try loading font information for TS1+XCharter-TLF on input 
-line 157.
+line 159.
  (/usr/share/texlive/texmf-dist/tex/latex/xcharter/TS1XCharter-TLF.fd
 File: TS1XCharter-TLF.fd 2013/10/27 (autoinst) Font definitions for TS1/XCharte
 r-TLF.
 )
 LaTeX Font Info:    Font shape `TS1/XCharter-TLF/m/n' will be
-(Font)              scaled to size 10.95pt on input line 157.
+(Font)              scaled to size 10.95pt on input line 159.
 \gray 010.95tikzsymbols@savebox@Winkey1none=\box40
 
-Underfull \hbox (badness 10000) in paragraph at lines 174--175
+Underfull \hbox (badness 10000) in paragraph at lines 176--177
 
  []
 
@@ -932,21 +932,21 @@ Package Fancyhdr Warning: \headheight is too small (12.0pt):
 [2]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 190.
+               Default added (so using `tbp') on input line 192.
 
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 201.
+               Default added (so using `tbp') on input line 203.
 
 [3] [4]
 No file report.bbl.
 [1]
-Underfull \hbox (badness 10000) in paragraph at lines 273--274
+Underfull \hbox (badness 10000) in paragraph at lines 275--276
 
  []
 
 LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/it' will be
-(Font)              scaled to size 10.0pt on input line 278.
+(Font)              scaled to size 10.0pt on input line 280.
 
 Package natbib Warning: There were undefined citations.
 
@@ -954,10 +954,10 @@ Package natbib Warning: There were undefined citations.
 Here is how much of TeX's memory you used:
  17510 strings out of 493638
  353406 string characters out of 6146797
- 424467 words of memory out of 5000000
+ 424505 words of memory out of 5000000
  20500 multiletter control sequences out of 15000+600000
  95414 words of font info for 65 fonts, out of 8000000 for 9000
  1328 hyphenation exceptions out of 8191
- 56i,12n,82p,1029b,464s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 56i,11n,82p,1029b,464s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on report.pdf (6 pages).

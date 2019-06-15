@@ -1,15 +1,31 @@
-# PACKAGE-DELIVERY
-* As a speed up, we convert the official offered \*.xlsx data into \*.csv format data.
-* We split the TableD.xlsx into 4 sub-csvs(train.csv...)
-* As another speedup, we parse all the records about transportation and construct the graph. PKL model is available here [Model](http://resources.dbgns.com/package-delivery/graph.pkl)
+# Package-Delivery
+> Project1 of Algroithms And Complexity(SJTU. 2019. Spring)
 
-# Usage 
-```
+## Introduction
+&nbsp;&nbsp;In this project, we need to help the Express Company schedule the orders on "Double 11" Day.
+Officially offered data are available [here(*.xlsx)](data).There are 4 different scenarios in total
+(refer to the [problem.pdf](report/problem.pdf))for more details
+* All of the 656 cities covered in the orders have stations
+Design an efficient algorithm to transfer packages
+* Hubs can transfer packages with lower unit cost, but a specific
+hub can only use one transportation tool to transfer packages to each neighbour.
+Design the scheme to build the hubs
+* There may be some other constraints(e.g. Inflammable commodities
+will be rejected by the hubs and can not be transported by
+airlines). Besides, the hubs are capacitied. Revise the model
+you designed above.
+* If only large cities(cities with airline service) have station, 
+how to schedule the packages efficiently?
+
+## Demo
+``` shell
 git clone https://github.com/dbgns/package-delivery ~
-cd ~/package-delivery
-wget http://resources.dbgns.com/package-delivery/graph.pkl data/
-cd src
-python graph.py
+echo "export PYTHONPATH=~/package-delivery/:$PYTHONPATH" >> ~/.bashrc
+source ~/.bashrc
+
+cd ~/package-delivery/src
+python demo.py --problem_id 1 --num_orders 2400 --num_processes 16
 ```
-The last command will create serveral processes to parse the orders. <br>
-**WARNING:** Pay attention to your computational resources, as the process is pretty computational intensive and slow.
+**WARNING: This process may involve multiprocessing. Pay attention 
+to your computational resources, as the process may be pretty slow and
+computational intensive**
