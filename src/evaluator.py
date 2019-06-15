@@ -249,16 +249,18 @@ class Evaluator(object):
     def hub_cap_test(self):
         hub_cap_path = osp.join(self.base_dir, "cap.csv")
 
-        index = np.where(cfg.EVALUATION.HUB_COST_VARY_FIELD == cfg.PARAM.HUB_CAPACITY)[0]
+        index = np.where(cfg.EVALUATION.HUB_CAPACITY_FIELD == cfg.PARAM.HUB_CAPACITY)[0]
         hub_capacity_field = np.insert(cfg.EVALUATION.HUB_CAPACITY_FIELD, index, 0.95 * cfg.PARAM.HUB_CAPACITY)
         hub_capacity_field = np.insert(hub_capacity_field, index+2, 1.05 * cfg.PARAM.HUB_CAPACITY)
 
         new_dict = edict()
         num_hubs_list, amount_cost_list, time_cost_list = [], [], []
-        mask = np.ones_like(cfg.EVALUATION.HUB_CAPACITY_FIELD)
+        mask = np.ones_like(hub_capacity_field)
+        print(hub_capacity_field)
         for idx, cap in enumerate(hub_capacity_field):
             new_dict["HUB_CAPACITY"] = cap
             merge_a_into_b(new_dict, cfg)
+            print(cfg)
             solver = Solver()
             solver.solve(problem_id=3, tune_mode=True)
             with open(self.hub_path, "rb") as f:

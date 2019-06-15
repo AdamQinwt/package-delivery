@@ -232,6 +232,9 @@ class Solver(object):
                                 expected_benefit += (strategy["Costs"][city_idx+1]
                                     - strategy["Infos"][city_idx+1].get_time_cost(strategy["TotalWeight"], info.arrival_time, strategy["emergency"])[1])
                     else:
+                        # if the limitation is already reached
+                        if sum_weight > cfg.PARAM.HUB_CAPACITY:
+                            break
                         # note that here we should consider some constraints when facing problem3
                         # e.g. some hubs may be capacitied, glass and inflammable products will be rejected
                         cleaned_strategies = [strategy for strategy in strategies if city in strategy["Paths"][:-1]
