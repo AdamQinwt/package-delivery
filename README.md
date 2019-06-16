@@ -61,8 +61,11 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 ### Difference
 &nbsp;&nbsp;We show the distributions of vehicles to offer an intutive feeling about the differences of strategies 
 ![vehicle1](imgs/vehicle1.png)
+
 ![vehicle2](imgs/vehicle2.png)
+
 ![vehicle3](imgs/vehicle3.png)
+
 ![vehicle4](imgs/vehicle4.png)
 
 ### Weight Tuning
