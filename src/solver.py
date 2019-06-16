@@ -126,7 +126,11 @@ class Solver(object):
                 hub = self.hubs[hub_indices.index(start)]
                 # Note that hub.neighbours[end] has type "Info"
                 info = hub.neighbours[end]
-                strategy['Vehicles'][i] = info.vehicle_type
+                try:
+                    strategy['Vehicles'][i] = info.vehicle_type
+                except:
+                    print("Error")
+                    break
                 # update the cost list
                 strategy["AmountCost"] += (info.unit_cost_trip * cfg.PARAM.HUB_UNIT_COST_RATIO \
                     - strategy["Infos"][i].unit_cost_trip) * strategy["TotalWeight"]
@@ -215,12 +219,16 @@ class Solver(object):
             # used for hub capacity
             sum_weight = 0
             for neighbour in self.graph.neighbours[city]:
+                # if the limitation is already reached
+                if self.constraint and sum_weight > cfg.PARAM.HUB_CAPACITY:
+                    break
                 best_info = None
                 # cost used for prob1,2 benefit used for problem3
-                max_benefit = cfg.INT_MIN
+                max_benefit, chosen_weight = cfg.INT_MIN, 0
                 for info in self.graph.infos[city][neighbour]:
                     expected_benefit = 0
-                    # if the city is not departure city of intermediate city of the order
+                    # count the number of allowed orders
+                    allowed_count, weight = 0, 0
                     if not self.constraint:
                         cleaned_strategies = [strategy for strategy in strategies if city in strategy["Paths"][:-1]]
                         for strategy in cleaned_strategies:
@@ -232,9 +240,6 @@ class Solver(object):
                                 expected_benefit += (strategy["Costs"][city_idx+1]
                                     - strategy["Infos"][city_idx+1].get_time_cost(strategy["TotalWeight"], info.arrival_time, strategy["emergency"])[1])
                     else:
-                        # if the limitation is already reached
-                        if sum_weight > cfg.PARAM.HUB_CAPACITY:
-                            break
                         # note that here we should consider some constraints when facing problem3
                         # e.g. some hubs may be capacitied, glass and inflammable products will be rejected
                         cleaned_strategies = [strategy for strategy in strategies if city in strategy["Paths"][:-1]
@@ -250,7 +255,7 @@ class Solver(object):
                         sorted_strategies_2 = sorted(cleaned_strategies,
                             key=lambda x: strategy_sort_func(x, info, city, func_type=1), reverse=True)
 
-                        while sum_weight <= cfg.PARAM.HUB_CAPACITY and len(cleaned_indices) > 0:
+                        while len(cleaned_indices) > 0:
                             while sorted_strategies_1[0]["index"] not in cleaned_indices:
                                 sorted_strategies_1.pop(0)
                             while sorted_strategies_2[0]["index"] not in cleaned_indices:
@@ -279,21 +284,32 @@ class Solver(object):
                                 chosen_strategy = sorted_strategies_1[0]
                                 expected_benefit += benefit_1
                             cleaned_indices.remove(chosen_strategy["index"])
-                            sum_weight += chosen_strategy["TotalWeight"]
+                            if sum_weight + weight + chosen_strategy["TotalWeight"] > cfg.PARAM.HUB_CAPACITY:
+                                break
+                            weight += chosen_strategy["TotalWeight"]
+                            allowed_count += 1
                             self.order_allowed[chosen_strategy["index"]] = 1
                             if neighbour not in self.neighbour_allowed[city]:
                                 self.neighbour_allowed[city].append(neighbour)
 
                     # minus the variable part of hub cost(e.g. maintaining the hub)
-                    expected_benefit -= len(cleaned_strategies) * cfg.PARAM.HUB_BUILT_COST_VARY
+                    if not self.constraint:
+                        expected_benefit -= len(cleaned_strategies) * cfg.PARAM.HUB_BUILT_COST_VARY
+                    else:
+                        expected_benefit -= allowed_count * cfg.PARAM.HUB_BUILT_COST_VARY
+
                     if expected_benefit > max_benefit:
+                        if self.constraint:
+                            chosen_weight = weight
                         max_benefit = expected_benefit
                         best_info = info
                 # then for all orders between the "city" and "neighbour", we all use vehicle in info
                 expected_total_benefit += max_benefit
+                sum_weight += chosen_weight
+                hub_neighbours[neighbour] = best_info
+                # print(expected_total_benefit)
                 if expected_total_benefit > max_total_benefit:
                     max_total_benefit = expected_total_benefit
-                hub_neighbours[neighbour] = best_info
             if max_total_benefit - cfg.PARAM.HUB_BUILT_COST_CONST > 0:
                 print("Build a hub at city {}".format(city))
                 # note that the changes of vehicles will take into effective

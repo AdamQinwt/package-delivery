@@ -58,13 +58,13 @@ class Evaluator(object):
         if tune:
             if prob_id == 1:
                 # for problem1 we tune the weight_amount and weight_cost
-                # self.weight_tune()
+                self.weight_tune()
                 self.weight_plot()
             elif prob_id == 2:
-                self.hub_cost_test()
+                # self.hub_cost_test()
                 self.hub_cost_plot()
             elif prob_id == 3:
-                self.hub_cap_test()
+                # self.hub_cap_test()
                 self.hub_cap_plot()
 
         # plot the distribution or not
@@ -88,8 +88,9 @@ class Evaluator(object):
         index = np.where(cfg.EVALUATION.HUB_RATIO_FIELD == ori_ratio)[0]
         hub_ratio_field = np.insert(cfg.EVALUATION.HUB_RATIO_FIELD, index, round(0.95 * ori_ratio, 2))
         hub_ratio_field = np.insert(hub_ratio_field, index+2, round(1.05 * ori_ratio, 2))
-
-        for ratio in hub_ratio_field:
+        print("HUB_RATIO_FIELD : ", hub_ratio_field)
+        mask = np.ones_like(hub_ratio_field)
+        for idx, ratio in enumerate(hub_ratio_field):
             new_dict["HUB_UNIT_COST_RATIO"] = ratio
             merge_a_into_b(new_dict, cfg)
             solver = Solver()
@@ -98,6 +99,7 @@ class Evaluator(object):
                 num_hubs = len(pkl.load(f))
             if num_hubs == 0:
                 print("When ratio is: {}. Some error has occurred... Maybe no hubs were built.".format(ratio))
+                mask[idx] = 0
                 continue
             self._pkl2csv()
             # get the number of hubs
@@ -108,7 +110,7 @@ class Evaluator(object):
             print("Ratio: {:.2f} | Hubs: {:.0f} | Average amount cost:{:.2f}$ | Average time cost:{:.2f}m.".
                   format(ratio, num_hubs, avg_amount_cost, avg_time_cost))
         # save to csv
-        df = pd.DataFrame(data=list(zip(hub_ratio_field, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_ratio_field[np.nonzero(mask)], num_hubs_list, amount_cost_list, time_cost_list)),
             columns=["Ratio", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
         df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
@@ -123,7 +125,8 @@ class Evaluator(object):
         # then check the sensitivity of the HUB_BUILT_COST_CONST
         # add exception handler for fear of no hubs
         num_hubs_list, amount_cost_list, time_cost_list =[], [], []
-        for const_cost in hub_const_field:
+        mask = np.ones_like(hub_const_field)
+        for idx, const_cost in enumerate(hub_const_field):
             new_dict["HUB_BUILT_COST_CONST"] = const_cost
             merge_a_into_b(new_dict, cfg)
             solver = Solver()
@@ -132,6 +135,7 @@ class Evaluator(object):
                 num_hubs = len(pkl.load(f))
             if num_hubs == 0:
                 print("When const cost is :{}. No hubs are built. Continue...".format(const_cost))
+                mask[idx] = 0
                 continue
             self._pkl2csv()
             # get the number of hubs
@@ -141,7 +145,7 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Const cost: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.2f}$ | Average time cost: {:.2f}m.".
                   format(const_cost, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(hub_const_field, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_const_field[np.nonzero(mask)], num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubConstCost", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
         df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
@@ -152,11 +156,12 @@ class Evaluator(object):
 
         index = np.where(cfg.EVALUATION.HUB_COST_VARY_FIELD == ori_vary_cost)[0]
         hub_vary_field = np.insert(cfg.EVALUATION.HUB_COST_VARY_FIELD, index, 0.95 * ori_vary_cost)
-        cfg.EVALUATION.HUB_COST_VARY_FIELD = np.insert(hub_vary_field, index+2, 1.05 * ori_vary_cost)
+        hub_vary_field = np.insert(hub_vary_field, index+2, 1.05 * ori_vary_cost)
 
         # check the sensitivity of the HUB_BUILT_COST_VARY
         num_hubs_list, amount_cost_list, time_cost_list = [], [], []
-        for vary_cost in hub_vary_field:
+        mask = np.ones_like(hub_vary_field)
+        for idx, vary_cost in enumerate(hub_vary_field):
             new_dict["HUB_BUILT_COST_VARY"] = vary_cost
             merge_a_into_b(new_dict, cfg)
             solver = Solver()
@@ -165,6 +170,7 @@ class Evaluator(object):
                 num_hubs = len(pkl.load(f))
             if num_hubs == 0:
                 print("When vary cost is :{}. No hubs are built. Continue..".format(vary_cost))
+                mask[idx] = 0
                 continue
             self._pkl2csv()
             avg_amount_cost, avg_time_cost = self.get_avg_cost()
@@ -173,7 +179,7 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Vary cost: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.3f}$ | Average time cost: {:.2f}m.".
                   format(vary_cost, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(hub_vary_field, num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_vary_field[np.nonzero(mask)], num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubVaryCost", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
         df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
@@ -206,7 +212,6 @@ class Evaluator(object):
         plt.title("Objective(ax + by)-HubRatio Curve\n" + "Slope:{:.2f}".format(slope))
         plt.savefig(cost_ratio_path[:-3]+"png")
 
-        print("success")
         # plot the const cost part
         plt.figure()
         data = pd.read_csv(cost_const_path)
@@ -256,15 +261,14 @@ class Evaluator(object):
         new_dict = edict()
         num_hubs_list, amount_cost_list, time_cost_list = [], [], []
         mask = np.ones_like(hub_capacity_field)
-        print(hub_capacity_field)
         for idx, cap in enumerate(hub_capacity_field):
             new_dict["HUB_CAPACITY"] = cap
             merge_a_into_b(new_dict, cfg)
-            print(cfg)
             solver = Solver()
             solver.solve(problem_id=3, tune_mode=True)
             with open(self.hub_path, "rb") as f:
-                num_hubs = len(pkl.load(f))
+                data = pkl.load(f)
+                num_hubs = len(data["hubs"])
             if num_hubs == 0:
                 print("When capacity is :{}. No hubs were built...Continue...".format(cap))
                 mask[idx] = 0
@@ -276,7 +280,7 @@ class Evaluator(object):
             num_hubs_list.append(num_hubs)
             print("Hub capacity: {:.0f} | Hubs: {:.0f} | Average amount cost: {:.3f}$ | Average time cost: {:.2f}m.".
                   format(cap, num_hubs, avg_amount_cost, avg_time_cost))
-        df = pd.DataFrame(data=list(zip(hub_capacity_field[mask], num_hubs_list, amount_cost_list, time_cost_list)),
+        df = pd.DataFrame(data=list(zip(hub_capacity_field[np.nonzero(mask)], num_hubs_list, amount_cost_list, time_cost_list)),
                           columns=["HubCapacity", "NumHubs", "AmountCost", "TimeCost"])
         df["Products"] = df["AmountCost"] * df["TimeCost"]
         df["Values"] = cfg.PARAM.WEIGHT_AMOUNT * df["AmountCost"] + cfg.PARAM.WEIGHT_TIME * df["TimeCost"]
@@ -289,16 +293,16 @@ class Evaluator(object):
         x, y = list(data["HubCapacity"]), list(data["Values"])
         plt.plot(x, y, marker="o", ms=8)
 
-        index = data.loc[data["HubCapacity"] == cfg.PARAM.HUB_BUILT_COST_CONST].index[0]
+        index = data.loc[data["HubCapacity"] == cfg.PARAM.HUB_CAPACITY].index[0]
         x1, y1 = data.loc[index-1, ["HubCapacity", "Values"]]
         x2, y2 = data.loc[index+1, ["HubCapacity", "Values"]]
         slope = (y2 - y1) / (x2 - x1)
-        new_x = np.linspace(0.9 * min(x1), 1.1 * max(x1), 20)
+        new_x = np.linspace(0.9 * min(x), 1.1 * max(x), 20)
         new_y = slope * (new_x - x1) + y1
         plt.plot(new_x, new_y, '--')
         plt.xlabel("HubCapacity")
-        plt.ylabel("Products")
-        plt.title("Products(amountCost*timeCost)-HubCapacity Curve\nSlope: {:.2f}".format(slope))
+        plt.ylabel("Values")
+        plt.title("Objective(ax+by)-HubCapacity Curve\nSlope: {:.2f}".format(slope))
         plt.savefig(hub_cap_path[:-3]+"png")
         plt.show()
 
@@ -362,7 +366,6 @@ class Evaluator(object):
             for weight_time in cfg.EVALUATION.WEIGHT_TIME_FIELD:
                 new_dict["WEIGHT_AMOUNT"] = round(weight_amount, 2)
                 new_dict["WEIGHT_TIME"] = round(weight_time, 2)
-                new_dict["NUM_ORDERS"] = 16
                 # merge the config
                 merge_a_into_b(new_dict, cfg)
                 # solve the problem and get the output
@@ -417,4 +420,4 @@ class Evaluator(object):
 
 if __name__ == "__main__":
     evaluator = Evaluator()
-    evaluator.evaluate(prob_id=3, tune=True)
+    evaluator.evaluate(prob_id=1, tune=True)

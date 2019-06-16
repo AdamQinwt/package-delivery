@@ -49,8 +49,7 @@ __C.EVALUATION.WEIGHT_TIME_FIELD = np.round(np.arange(0.3, 2, 0.3), decimals=2)
 __C.EVALUATION.WEIGHT_AMOUNT_FIELD = np.round(15 * np.arange(0.3, 2, 0.3), decimals=2)
 # for sensitivity test
 # for problem3
-#__C.EVALUATION.HUB_CAPACITY_FIELD = np.arange(500, 2500, 500)
-__C.EVALUATION.HUB_CAPACITY_FIELD = [100, 200, 500, 1000, 2000, 5000]
+__C.EVALUATION.HUB_CAPACITY_FIELD = np.arange(500, 2500, 500)
 
 # for problem2
 __C.EVALUATION.HUB_RATIO_FIELD = np.round(np.arange(0.1, 1.1, 0.1), decimals=3)
@@ -67,9 +66,9 @@ __C.CONSTRAINTS = [(0, 0), (2, 0)]
 # some hubs reject glass or inflammable products
 __C.HUB_REJECTS = [2, 7]
 # large number that will be used several times
-__C.INT_MAX = 10000000
+__C.INT_MAX = 1000000000
 # a small number that will be used several times
-__C.INT_MIN = -10000000
+__C.INT_MIN = -10000000000
 
 
 def merge_a_into_b(a, b):
