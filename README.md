@@ -26,6 +26,8 @@ source ~/.bashrc
 cd ~/package-delivery/src
 python demo.py --problem_id 1 --num_orders 2400 --num_processes 16
 ```
+## Performance Evaluation
+[trade-off](http://resources.dbgns.com/package-delivery/tune/cost-rate.png)
 **WARNING: This process may involve multiprocessing. Pay attention 
 to your computational resources, as the process may be pretty slow and
 computational intensive**
