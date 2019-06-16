@@ -26,6 +26,12 @@ source ~/.bashrc
 cd ~/package-delivery/src
 python demo.py --problem_id 1 --num_orders 2400 --num_processes 16
 ```
+
+**WARNING: This process may involve multiprocessing. Pay attention 
+to your computational resources, as the process may be pretty slow and
+computational intensive**
+
+
 ## Default Parameters
 |   Parameter    |     Value     |
 |     :--:       |      :--:     |
@@ -83,10 +89,6 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 ## Models And Detailed Results
 &nbsp;&nbsp;We constructed our graph into \*.pkl model. Our strategies(\*.txt format) for each problem are also available. <br>
 [models](http://resources.dbgns.com/package-delivery/models). [results](http://resources.dbgns.com/package-delivery/results).
-
-**WARNING: This process may involve multiprocessing. Pay attention 
-to your computational resources, as the process may be pretty slow and
-computational intensive**
 
 ## Authors
 JunjieWang, Yikai Yan, Wentao Qin
