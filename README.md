@@ -60,7 +60,7 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 
 ### Difference
 &nbsp;&nbsp;We show the distributions of vehicles to offer an intutive feeling about the differences of strategies 
-![vehicle1(imgs/vehicle1.png)
+![vehicle1](imgs/vehicle1.png)
 ![vehicle2](imgs/vehicle2.png)
 ![vehicle3](imgs/vehicle3.png)
 ![vehicle4](imgs/vehicle4.png)
@@ -71,7 +71,7 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 &nbsp;&nbsp;Also we plot a 3D-figure
 ![weight-tune](imgs/weight.png)
 ### Sensitivity Check
-&nbsp;&nsbp;As a sensitivity check, we check the paramters relevant to the hubs
+&nbsp;&nbsp;As a sensitivity check, we check the paramters relevant to the hubs
 ![capacity](imgs/cap.png)
 ![const-cost](imgs/const.png)
 ![vary-cost](imgs/vary.png)
@@ -80,6 +80,10 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 ## Models And Detailed Results
 &nbsp;&nbsp;We constructed our graph into \*.pkl model. Our strategies(\*.txt format) for each problem are also available. <br>
 [models](http://resources.dbgns.com/package-delivery/models). [results](http://resources.dbgns.com/package-delivery/results).
+
 **WARNING: This process may involve multiprocessing. Pay attention 
 to your computational resources, as the process may be pretty slow and
 computational intensive**
+
+## Authors
+JunjieWang, Yikai Yan, Wentao Qin
