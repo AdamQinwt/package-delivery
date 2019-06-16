@@ -26,8 +26,27 @@ source ~/.bashrc
 cd ~/package-delivery/src
 python demo.py --problem_id 1 --num_orders 2400 --num_processes 16
 ```
+## Default Parameters
+|   Parameter    |     Value     |
+|     :--:       |      :--:     |
+| WeightOfAmount |      15       |
+| WeightOfTime   |       1       |
+|  HubCapacity   |      1000     |
+| HubCostRatio   |       0.7     |
+| HubConstCost   |      3000     |
+|  HubVaryCOst   |       300     |
 ## Performance Evaluation
-[trade-off](http://resources.dbgns.com/package-delivery/tune/cost-rate.png)
+#### Average Cost
+&nbsp;&nbsp;Using the paramters listed above, we run our model for 2400 orders and 240000 orders respectively.
+|           |                     2400 orders                     |                 240000 orders                    |
+| problem1  |   AverageAmountCost($)  |   AverageTimeCost(min)    |  AverageAmountCost($)  |  AverageTimeCost(min)   |
+| :--:      |         :--:            |        :--:               |       :--:             |      :--:               |
+![trade-off](imgs/tune/cost-rate.png)
+![weight-tune](imgs/tune/weight.png)
+![capacity]()
+![const-cost]()
+![vary-cost]()
+![ratio]()
 **WARNING: This process may involve multiprocessing. Pay attention 
 to your computational resources, as the process may be pretty slow and
 computational intensive**
