@@ -1,5 +1,5 @@
 # Package-Delivery
-> Project1 of Algroithms And Complexity(SJTU. 2019. Spring)
+> Project1 of Algroithms And Complexity(Spring 2019 SJTU)
 
 ## Introduction
 &nbsp;&nbsp;In this project, we need to help the Express Company schedule the orders on "Double 11" Day.
@@ -78,9 +78,8 @@ An explanation for this observation is our **assumption**: Hubs can co-exist wit
 ![ratio](imgs/ratio.png)
 
 ## Models And Detailed Results
-&nbsp;&nbsp;We constructed our graph into \*.pkl model. Our strategies(\*.txt format) for each problem are also available.
-[models](http://resources.dbgns.com/package-delivery/models). <br>
-[results](http://resources.dbgns.com/package-delivery/results).
+&nbsp;&nbsp;We constructed our graph into \*.pkl model. Our strategies(\*.txt format) for each problem are also available. <br>
+[models](http://resources.dbgns.com/package-delivery/models). [results](http://resources.dbgns.com/package-delivery/results).
 **WARNING: This process may involve multiprocessing. Pay attention 
 to your computational resources, as the process may be pretty slow and
 computational intensive**
