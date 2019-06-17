@@ -59,7 +59,7 @@ computational intensive**
 | problem1  |          443.59         |         1340.67           | 
 | problem2  |          442.11         |         1359.00           |
 | problem3  |          443.58         |         1342.18           |
-| problem4  |          965.75         |         3322.68           |
+| problem4  |          1640.60        |         3671.68           |
 
 > Note that intuitively in problem3 scenario we should build less hubs than problem2, but our model gives contrary results.
 An explanation for this observation is our **assumption**: Hubs can co-exist with stations in problem3. Besides, we are uncertain about the setting of hub capacity(we speculate that it should be a medium value and ours is too small :-)
