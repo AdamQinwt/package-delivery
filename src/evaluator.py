@@ -58,7 +58,7 @@ class Evaluator(object):
         if tune:
             if prob_id == 1:
                 # for problem1 we tune the weight_amount and weight_cost
-                self.weight_tune()
+                # self.weight_tune()
                 self.weight_plot()
             elif prob_id == 2:
                 # self.hub_cost_test()
@@ -371,6 +371,8 @@ class Evaluator(object):
                 # solve the problem and get the output
                 solver = Solver()
                 solver.solve(problem_id=1, tune_mode=True)
+                # don't forget transform into csv file
+                self._pkl2csv()
                 avg_amount_cost, avg_time_cost = self.get_avg_cost()
                 weight_amount_list.append(round(weight_amount, 2))
                 weight_time_list.append(round(weight_time, 2))
@@ -378,14 +380,12 @@ class Evaluator(object):
                 time_cost_list.append(avg_time_cost)
                 print("When weight of amount is {:.2f} and weight of time is:{:.2f}".format(weight_amount, weight_time))
                 print("Average amount cost is: {:.1f}. Average time cost is:{:.1f}".format(avg_amount_cost, avg_time_cost))
-                # don't forget transform into csv file
-                self._pkl2csv()
 
         df = pd.DataFrame(data=list(zip(weight_amount_list, weight_time_list, amount_cost_list, time_cost_list)),
                 columns=["WeightOfAmount", "WeightOfTime", "AmountCost", "TimeCost"])
         # multiply the two columns to get the products
         df["Products"] = df["AmountCost"] * df["TimeCost"]
-        df.to_csv(weight_data_path, index=False)
+        df.to_csv(weight_data_path, index=False, float_format="%.2f")
 
     def weight_plot(self):
         """
@@ -393,15 +393,34 @@ class Evaluator(object):
         """
         weight_data_path = osp.join(self.base_dir, "weight.csv")
         weight_plot_path = osp.join(self.base_dir, "weight.png")
+        cost_rate_path = osp.join(self.base_dir, "cost-rate.png")
         # read data from txt we generated beforehand
+
+        df = pd.read_csv(weight_data_path)
+        df["Rate"] = df["WeightOfAmount"] / df["WeightOfTime"]
+        # clean the data
+        df = df.drop_duplicates(subset="Rate", keep="first")
+        df = df.sort_values(by="Rate", ascending=True)
+
+        fig = plt.figure(figsize=(12, 8))
+        ax1 = fig.add_subplot(111)
+        ax2 = ax1.twinx()
+
+        sns.pointplot(x="Rate", y="AmountCost", data=df, ax=ax1, color='r')
+        sns.pointplot(x="Rate", y="TimeCost", data=df, ax=ax2)
+        ax1.legend(["AmountCost-Rate"], loc="upper left")
+        ax2.legend(["TimeCost-Rate"], loc="upper right")
+        plt.title("Cost-Rate(weightOfAmount/weightOfTime) Curve")
+        plt.savefig(cost_rate_path)
+
         data = pd.read_csv(weight_data_path)
         # multiply the two columns to get the products
         x = data["WeightOfAmount"].unique().tolist()
         y = data["WeightOfTime"].unique().tolist()
         x, y = np.meshgrid(x, y)
-        z = np.array(data["Product"]).reshape(x.shape)
-        min_product = data["Product"].min()
-        mask = data.loc[:, "Product"] == min_product
+        z = np.array(data["Products"]).reshape(x.shape)
+        min_product = data["Products"].min()
+        mask = data.loc[:, "Products"] == min_product
         best_a, best_b, amount, time = data[mask].iloc[0, :-1]
 
         # draw

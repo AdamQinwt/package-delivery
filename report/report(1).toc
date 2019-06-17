@@ -25,8 +25,11 @@
 \contentsline {subsection}{\numberline {6.2}Complexity Analysis}{16}{subsection.6.2}% 
 \contentsline {subsection}{\numberline {6.3}Modeling}{16}{subsection.6.3}% 
 \contentsline {subsection}{\numberline {6.4}Algorithm Design}{17}{subsection.6.4}% 
-\contentsline {section}{\numberline {7}Parameter Determination}{19}{section.7}% 
-\contentsline {section}{\numberline {8}Performance Evaluation}{19}{section.8}% 
-\contentsline {section}{\numberline {9}Sensitivity Test}{19}{section.9}% 
-\contentsline {section}{\numberline {10}Summary}{19}{section.10}% 
-\contentsline {section}{\numberline {11}Acknowledgement}{i}{section.11}% 
+\contentsline {section}{\numberline {7}Performance Evaluation}{19}{section.7}% 
+\contentsline {subsection}{\numberline {7.1}Delivery Scheme}{19}{subsection.7.1}% 
+\contentsline {subsection}{\numberline {7.2}Ratio of Transportation Tools}{20}{subsection.7.2}% 
+\contentsline {subsection}{\numberline {7.3}Trade-off Between Customer Rating and Cost}{20}{subsection.7.3}% 
+\contentsline {subsection}{\numberline {7.4}Average Cost and Time}{24}{subsection.7.4}% 
+\contentsline {section}{\numberline {8}Sensitivity Test}{24}{section.8}% 
+\contentsline {section}{\numberline {9}Summary}{27}{section.9}% 
+\contentsline {section}{\numberline {10}Acknowledgement}{i}{section.10}% 

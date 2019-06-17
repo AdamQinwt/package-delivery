@@ -37,6 +37,7 @@
 %---------------------------------------------------------------------------------
 % Define your margins
 \usepackage{geometry} % Necessary package for defining margins
+\usepackage{subfigure}
 
 \geometry{
 	top=2cm, % Defines top margin
@@ -244,7 +245,7 @@ Wentao Qin 517021910483 423445630@qq.com
 		\item Objective Function.\par
 		The function is $f(p)$. $p$ is a path from $seller\_city$ to $purchaser\_city$. We call this function \textcolor{red}{overall evaluation}.
 		$$f(p) = a\times cost+b\times time.$$
-		$cost$ is the total cost of the delivery scheme. And  $time$ is the time that elapse from when the order happens to when the commodity arrives at the destination. Notice that customer's rating is proportional with $time$ and the lower the better. $a$ and $b$ are parameters to be determined later in section \ref{par}. I.e. $f$ is the weighted average of $cost$ and $time$. $cost$ is with unit $\$$ and $time$ is with unit $min$.\par
+		$cost$ is the total cost of the delivery scheme. And  $time$ is the time that elapse from when the order happens to when the commodity arrives at the destination. Notice that customer's rating is proportional with $time$ and the lower the better. In our model we determine $a=15$ and $b=1$. I.e. $f$ is the weighted average of $cost$ and $time$. $cost$ is with unit $\$$ and $time$ is with unit $min$.\par
 		$\quad$ The constraint is that the scheme is represented by a simple path from $seller\_city$ to $purchaser\_city$. On the path, each 2 city is connected by exactly one transportation tool. $cost$ is calculated by simply add all the cost on each segment of the path.\par
 		$\quad$ However, $time$ is hard to determine. Since the transportation tools has their $depart\_time$ and the commodity can't be transported immediately when it arrives. Therefore, $time$ can only be calculated by simulating the process. I.e. for each city $u$, if the commodity arrives earlier than the given transportation tool from $u$'s $depart\_time$, add $time$ by $depart\_time-arrival\_time$. Else, it can only be transported out of city $u$ next day. Hence, $time$ is added by $depart\_time-arrival\_time+24\times 60$.\\
 		\item $LP$ or $ILP$?\par
@@ -337,7 +338,7 @@ Wentao Qin 517021910483 423445630@qq.com
 	\subsection{Problem Analysis}\label{2-PA}
 	Assume the cost to construct a hub is $\hat{c}$. 
 	$$\hat{c}=c_0+c_1|orders|$$
-	$c_0$ is the cost for building the hub (a constant). $c_1|orders|$ is the cost for running the hub. This is proportional with the number of orders $|orders|$.
+	$c_0$ is the cost for building the hub (a constant). $c_1|orders|$ is the cost for running the hub. $|orders|$ is the number of orders going through the hub. This is proportional with  $|orders|$.
 	
 	And assume the transportation cost between two hubs is $x(0\leq x\leq 1)$ times that not between hubs. The $f$ of a delivery is the sum of all the $f$s of its route.\par
 	\indent For simplicity, \textbf{we assume that the delivery routes remain unchanged and only consider how to set up hubs and which transportation tool to use.} The idea is to sequentially check whether setting up a hub in a city can optimize $f(time,cost)$.
@@ -597,25 +598,154 @@ Wentao Qin 517021910483 423445630@qq.com
 % Research design
 %----------------------------------------------------------------------------------------
 
-\section{Parameter Determination}\label{par}
-In this section, we determine the parameters $a$ and $b$ defined in section \ref{1-PF}. We want to reach the least $time$ and $cost$. To achieve this, we use $a\times cost+b\times time$ as an overall evaluation. And we need to carefully determine the 2 parameters $a$ and $b$. Hence, we picked 2400 orders (not emergency) as a sample. Apply different parameters $a$ and $b$ on this sample and run the program. For each pair $(a,b)$, calculate the average $time$ and $cost$ achieved. Then, use $time\times cost$ as the z-axis value and we get figure \ref{fig:ab}.
-\begin{figure}
-	\centering
-
-	\includegraphics[width=\textwidth]{figure/ab}
-	\caption{$time\times cost-(a,b)$}
-	\label{fig:ab}
-\end{figure}
-
-From this figure, we see that when $a=18$, $b=1.2$, the program achieve the lowest $time\times cost$. Hence, we determine $a=18$ and $b=1.2$ as the parameters used in the whole project.
-
-For emergency orders, $time$ is more important. Therefore, we set $b$ for those orders twice that for ordinary orders. I.e. $b=2.4$ for emergency orders. Then the program care more on $time$ for those orders.
-
 \section{Performance Evaluation}
-Part of the program output. And analyze the trade-off between $time$ and $cost$.
+\subsection{Delivery Scheme}
+	The entire result is available on http://resources.dbgns.com/package-delivery/results.
+\begin{enumerate}
+	\item Problem 1\\
+	We run the algorithm for every order and got their delivery schemes. We list some as follow. 
+	\begin{verbatim}
+	For order 0 with totalWeight: 187.529 and emergency: 0, Best strategy is:
+	Paths: [655, 614, 593, 10], Vehicles: ['Truck', 'Truck', 'Truck'], 
+	AmountCost: 200.161$, TimeCost: 584.11m, ArrivalTime: 23:50:55
+	
+	For order 33 with totalWeight: 7.612 and emergency: 0, Best strategy is:
+	Paths: [362, 621, 73, 646], Vehicles: ['Plane', 'Truck', 'Truck'], 
+	AmountCost: 18.661$, TimeCost: 685.48m, ArrivalTime: 23:33:39
+	\end{verbatim}
+	\item Problem 2\\
+	In this problem, the delivery scheme will change because of the constraints of hubs. And we only list the cities where we construct hubs here. 4 hubs are constructed in total.
+	\begin{verbatim}
+	106 205 164 503 
+	\end{verbatim}
+	\item Problem 3\\
+	Also, we list the cities where we construct hubs here. 32 hubs are constructed in total.
+	\begin{verbatim}
+	358 400 290 406 549 417 529 577 187 106 51 308 651 531 183 252
+	205 469 223 164 503 117 199 197 370 352 524 449 460 424 397 302 
+	\end{verbatim}
+	\item Problem 4\\
+	Since the constraints added, the delivery schemes change. E.g. order 0's scheme changed to:
+	\begin{verbatim}
+	For order 0 with totalWeight: 187.529 and emergency: 0, Best strategy is:
+	Paths: [10, 548, 170, 54, 655, 403, 170],
+	Vehicles: ['Truck', 'Truck', 'Ship', 'Truck', 'Truck', 'Truck'], 
+	AmountCost: 343.953$, TimeCost: 5398.69m, ArrivalTime: (+4day):8:05:30
+	\end{verbatim}
+\end{enumerate}
+\subsection{Ratio of Transportation Tools}
+	In this section, we visualized the ratio of transportation tools for each problem. See figure \ref{fig:p1}, \ref{fig:p2}, \ref{fig:p3} and \ref{fig:p4}. From this figure, we found that truck occupied a huge ratio of chosen transportation tools. And plane occupies very little. One reason is that the number of trucks is far more than that of other transportation tools. Another reason is that plane is too expensive. And this also correspond with reality. Since in reality, only emergency packages will be transported by plane. Another interesting result is that, in problem 4, ship occupied a substantially larger ratio.
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\linewidth]{figure/vehicle1.png}
+		\caption{problem 1}
+		\label{fig:p1}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\linewidth]{figure/vehicle2.png}
+		\caption{problem 2}
+		\label{fig:p2}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\linewidth]{figure/vehicle3.png}
+		\caption{problem 3}
+		\label{fig:p3}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\linewidth]{figure/vehicle4.png}
+		\caption{problem 4}
+		\label{fig:p4}
+	\end{figure}
+
+\subsection{Trade-off Between Customer Rating and Cost}
+	We changed parameters $a$ and $b$. ($f=a\times cost+b\times time$.) Under different parameters, use $a/b$ as independent variable. And use $cost$ and $time$ as dependent variables. We get the figure \ref{fig:tradeoff}. 
+	
+	$AmountCost$ corresponds to $cost$ and $timeCost$ corresponds to $time$. From this figure, we found that as $a/b$ increases, $time$ and $cost$ increases and decreases respectively. Therefore, there is actually a trade-off between customer rating and cost.
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{figure/tradeoff.png}
+		\caption{Trade of between customer rate and cost}
+		\label{fig:tradeoff}
+	\end{figure}
+
+	Since there is a trade-off between them, maybe we need to determine $a$ and $b$ more carefully to strike a balance between them. The objective is to achieve lower $time$ and $cost$. Hence, we use $time\times cost$ achieved by the algorithm as the dependent variable. And use $a$ and $b$ as independent variables. Then the relationship between them is shown in figure \ref{fig:ab}
+	\begin{figure}
+		\centering
+		
+		\includegraphics[width=\textwidth]{figure/ab}
+		\caption{$time\times cost-(a,b)$}
+		\label{fig:ab}
+	\end{figure}
+
+	In the figure weight of amount cost corresponds to $a$ and weight of time cost corresponds to $b$. Then we can see from the figure that the best choice of $a$ and $b$ is 4.5 and 1.8 respectively.
+
+\subsection{Average Cost and Time}
+We list the average cost and time achieved in each problem here in table \ref{tb:aveCT}. 
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		               &average cost     &  average time & number of hubs\\
+		               \hline
+		problem 1      &439.50                  &   1357.80& \\
+		\hline
+		problem 2      &437.94                  &   1369.31& 4 hubs\\
+		\hline
+		problem 3      &439.49                  &   1359.79& 32 hubs\\
+		\hline
+		problem 4      &969.08                  &   3374.58& \\
+		\hline
+	\end{tabular}
+	\caption{Overall Evaluation}
+	\label{tb:aveCT}
+\end{table}
+
+\indent From the table, we found some results:
+\begin{enumerate}
+	\item Problem 2 and 3 achieved lower $cost$ and $time$ than problem 1 because of the hubs. 
+	\item In problem 3, much more hubs are constructed. This is because that this problem allows hub and substation exist in the same city.
+	\item In problem 4, average cost and time are much larger than in problem 1. This is because not all cities are substations. Hence, longer delivery route is required.
+\end{enumerate}
 
 \section{Sensitivity Test}
-The effect of changing $c_0,c_1$, $x$ in problem 2 is shown here. Also, $capacity$ in problem 3.
+In the program, we determine $c_0=3000$ and $c_1=300$. The 2 are parameters determining hub building cost. And we determine $x=0.7$. This is the ratio for hub transportation. And $capacity=1000$. This is the hub capacity.
+
+In this section, we change the 4 parameters and observe their effect on our evaluation function $f=a\times cost+b\times time$.
+\begin{enumerate}
+	\item $c_0$ and $c_1$\par
+	$\quad$ The achieved $f$ on different $c_0$ and $c_1$ is plotted in figure \ref{fig:c0} and \ref{fig:c1}. Select 2 neighbor points around the value using in the program. And we find that the slopes are 0 for both figure. This is because small change to these 2 parameters will not influence how we construct the hubs. Therefore, the model is not sensitive to these 2 parameters. But of course, we can see also in the figures that large change to these 2 parameters will still influence the result. 
+	\begin{figure}
+		\centering
+		\includegraphics[width=\textwidth]{figure/const_cost.png}
+		\caption{$f-c_0$}
+		\label{fig:c0}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\textwidth]{figure/vary_cost.png}
+		\caption{$f-c_1$}
+		\label{fig:c1}
+	\end{figure}
+	\item $x$
+	The effect of $x$ is shown in figure \ref{fig:x}. We can see that the overall evaluation around $x=0.7$ is relatively stable. I.e. our model is also not sensitive to $x$ around our given value $0.7$. However, around lower value of $x$, our model is much more sensitive.
+	\begin{figure}
+		\centering
+		\includegraphics[width=\textwidth]{figure/x.png}
+		\caption{$f-x$}
+		\label{fig:x}
+	\end{figure}
+	\item $capacity$
+	In problem 3, we give each hub restricted capacity.  Hence, we look into the effect of it also. The figure is given in figure \ref{fig:cap}. We can see that the slope is 0 around our given value 1000. This is also because small difference of parameters will not make changes to the hub construction. Hence, our model is not sensitive to $capacity$ as well.
+	\begin{figure}
+		\centering
+		\includegraphics[width=\textwidth]{figure/capacity.png}
+		\caption{$f-capacity$}
+		\label{fig:cap}
+	\end{figure}
+\end{enumerate}
 
 \section{Summary}
 We refer to shortest path problem, sequential algorithm and knapsack problem to solve this project. And we sum the advantages and disadvantages of our model as follow:\\
@@ -661,5 +791,7 @@ Thanks for professor Gao's instructions along the semester and the careful desig
 \newpage % Includes a new page
 \section*{Appendix} % Stars disable section numbers
 % \appendix % Uncomment if you want to add an "automatic" appendix
-
+Code is available on github. Website: https://github.com/dbgns/package-delivery\\
+Model is available on website: http://resources.dbgns.com/package-delivery/models\\
+The detailed result is available on website: http://resources.dbgns.com/package-delivery/results
 \end{document}

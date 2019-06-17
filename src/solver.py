@@ -470,33 +470,43 @@ class Solver(object):
                 order_v[0] = dest
                 info_costs = self.small_graph.solve_single_order(order_v, all_vertices=True)
                 min_cost = cfg.INT_MAX
-                best_info_small, best_info_station = None, None
+                best_info_small_rev, best_info_station_rev = None, None
                 for vertex, (infos_small, cost) in info_costs.items():
                     # then we find station which can be directly reached by the vertex in the complete graph
                     for neighbour in self.graph.neighbours[vertex]:
                         # if neighbour is not a station, continue
-                        if neighbour not in self.small_graph.large_cities:
+                        if neighbour not in self.small_graph.large_cities or vertex not in self.graph.neighbours[neighbour]:
                             continue
                         prev_arrival = std2min(order[2])
                         for info in self.graph.infos[vertex][neighbour]:
                             _, cost_ = info.get_time_cost(total_weight, prev_arrival, emergency)
-                            prev_arrival = info.arrival_time
                             if cost + cost_ < min_cost:
                                 min_cost = cost + cost_
-                                best_info_small = infos_small
-                                best_info_station = info
-                t_dest_infos = list(best_info_small) + [best_info_station]
+                                best_info_small_rev = infos_small
+                                best_info_station_rev = info
                 # now we get the substation
-                substation_t = t_dest_infos[-1].dest
+                substation_t = best_info_station_rev.dest
+                order_v[0], order_v[1] = best_info_small_rev[-1].dest, dest
+                best_info_small = self.small_graph.solve_single_order(order_v)
+                best_info_station = None
+                min_cost = cfg.INT_MAX
+                prev_arrival = std2min(order[2])
+                for info in self.graph.infos[substation_t][order_v[0]]:
+                    _, cost_ = info.get_time_cost(total_weight, prev_arrival, emergency)
+                    if cost_ < min_cost:
+                        min_cost = cost_
+                        best_info_station = info
+                t_dest_infos = [best_info_station] + list(best_info_small)
+
             # then find shortest path on small graph between substation_s and substation_t
             order_v[0], order_v[1] = substation_s, substation_t
             s_t_infos = self.station_graph.solve_single_order(order_v)
             # combine the three parts
-            if t_dest_infos is not None:
-                infos.extend(t_dest_infos)
-            infos.extend(s_t_infos)
             if src_s_infos is not None:
                 infos.extend(src_s_infos)
+            infos.extend(list(s_t_infos))
+            if t_dest_infos is not None:
+                infos.extend(t_dest_infos)
             # then give the strategy
             strategy = self._analyze_strategy(i, order, infos)
             strategies.append(strategy)

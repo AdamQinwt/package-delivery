@@ -24,8 +24,11 @@
 \BOOKMARK [2][-]{subsection.6.2}{Complexity Analysis}{section.6}% 24
 \BOOKMARK [2][-]{subsection.6.3}{Modeling}{section.6}% 25
 \BOOKMARK [2][-]{subsection.6.4}{Algorithm Design}{section.6}% 26
-\BOOKMARK [1][-]{section.7}{Parameter Determination}{}% 27
-\BOOKMARK [1][-]{section.8}{Performance Evaluation}{}% 28
-\BOOKMARK [1][-]{section.9}{Sensitivity Test}{}% 29
-\BOOKMARK [1][-]{section.10}{Summary}{}% 30
-\BOOKMARK [1][-]{section.11}{Acknowledgement}{}% 31
+\BOOKMARK [1][-]{section.7}{Performance Evaluation}{}% 27
+\BOOKMARK [2][-]{subsection.7.1}{Delivery Scheme}{section.7}% 28
+\BOOKMARK [2][-]{subsection.7.2}{Ratio of Transportation Tools}{section.7}% 29
+\BOOKMARK [2][-]{subsection.7.3}{Trade-off Between Customer Rating and Cost}{section.7}% 30
+\BOOKMARK [2][-]{subsection.7.4}{Average Cost and Time}{section.7}% 31
+\BOOKMARK [1][-]{section.8}{Sensitivity Test}{}% 32
+\BOOKMARK [1][-]{section.9}{Summary}{}% 33
+\BOOKMARK [1][-]{section.10}{Acknowledgement}{}% 34
