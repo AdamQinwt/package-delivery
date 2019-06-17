@@ -50,7 +50,7 @@ computational intensive**
 | problem1  |          439.50         |         1357.80           | 
 | problem2  |          437.94         |         1369.31(4 hubs)   |
 | problem3  |          439.49         |         1359.79(32 hubs)  |
-| problem4  |          969.08         |         3374.58           |
+| problem4  |          1719.42        |         3744.59           |
 
 #### Results of 240000 orders
 
